@@ -1,0 +1,43 @@
+---
+import Layout from '../components/Layout.astro';
+import { fetchNoticias, type Noticia } from '../lib/api';
+
+const noticias: Noticia[] = await fetchNoticias();
+---
+
+<Layout title="Notícias" description="Fique por dentro das últimas notícias e comunicados da AGAFIM.">
+  <div class="container page">
+    <header class="hero" aria-hidden="false">
+      <div class="hero-inner">
+        <div class="hero-brand">
+          <h1>Notícias</h1>
+          <p class="text-muted hero-tagline">Últimas notícias e comunicados da AGAFIM.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="card content">
+      <p class="lead">
+        Acompanhe os comunicados oficiais, novidades e posicionamentos da AGAFIM.
+      </p>
+
+      {noticias.length > 0 ? (
+        <div style="display: grid; gap: 1.5rem; margin-top: 2rem;">
+          {noticias.map((noticia) => (
+            <a class="card" href={`/noticias/${noticia.slug}`} style="text-decoration: none; display: block;" key={noticia.id}>
+              <h3>{noticia.title}</h3>
+              <p class="small text-muted">
+                {noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-BR') : ''}
+              </p>
+              {noticia.summary && <p>{noticia.summary}</p>}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p class="lead text-muted">
+          Nenhuma notícia disponível no momento. As notícias serão exibidas aqui quando publicadas no Payload CMS.
+        </p>
+      )}
+    </main>
+  </div>
+</Layout>

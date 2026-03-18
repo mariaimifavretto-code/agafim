@@ -1,0 +1,47 @@
+---
+import Layout from '../components/Layout.astro';
+---
+<Layout title="Contato" description="Como entrar em contato com a AGAFIM.">
+  <section class="card">
+    <h2>Contato</h2>
+
+    <p>
+      Para entrar em contato com a AGAFIM, utilize os canais abaixo ou envie sua mensagem pelo formulário.
+      A nossa equipe responderá o mais breve possível.
+    </p>
+
+    <div style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1.25rem;">
+      <div class="card">
+        <h3>E-mail</h3>
+        <p>contato@agafim.org.br</p>
+      </div>
+      <div class="card">
+        <h3>Endereço</h3>
+        <p>Sede provisória no município do Presidente (RS)</p>
+      </div>
+      <div class="card">
+        <h3>Mais informações</h3>
+        <p>
+          Caso queira enviar documento ou sugestão, utilize o formulário abaixo ou acesse a área restrita para associados.
+        </p>
+      </div>
+    </div>
+
+    <form action="#" method="POST" style="margin-top: 1.5rem;" onsubmit="return false;">
+      <label style="display: block; margin: 0.75rem 0 0.35rem;">Nome</label>
+      <input name="name" type="text" placeholder="Seu nome" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
+
+      <label style="display: block; margin: 0.75rem 0 0.35rem;">E-mail</label>
+      <input name="email" type="email" placeholder="seu@exemplo.com" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
+
+      <label style="display: block; margin: 0.75rem 0 0.35rem;">Mensagem</label>
+      <textarea name="message" rows="5" placeholder="Escreva sua mensagem..." style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);"></textarea>
+
+      <button type="submit" style="margin-top: 1rem;">Enviar mensagem</button>
+    </form>
+
+    <p style="margin-top: 1rem; color: var(--muted); font-size: 0.95rem;">
+      Observação: o envio deste formulário está no modo de demonstração. Em breve, implementaremos a funcionalidade completa para receber suas mensagens diretamente em nosso e-mail.
+    </p>
+  </section>
+</Layout>

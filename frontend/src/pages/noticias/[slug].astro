@@ -1,0 +1,35 @@
+---
+import Layout from '../../components/Layout.astro';
+import { fetchNoticiaBySlug, type Noticia } from '../../lib/api';
+
+const { slug } = Astro.params;
+
+// Fetch noticia from Payload CMS
+const noticia: Noticia | null = await fetchNoticiaBySlug(slug as string);
+
+if (!noticia) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={noticia.title} description={noticia.summary}>
+  <article class="card">
+    <h2>{noticia.title}</h2>
+    <p class="summary">{noticia.summary}</p>
+    <p style="color: var(--muted); margin-top: 0;">
+      {new Date(noticia.createdAt).toLocaleDateString('pt-BR')}
+    </p>
+    <div style="margin-top: 1rem; line-height: 1.75;">
+      {noticia.content ? (
+        <div set:html={noticia.content} />
+      ) : (
+        <p>Conteúdo em breve.</p>
+      )}
+    </div>
+    {noticia.author && (
+      <p style="margin-top: 1.5rem; color: var(--muted); font-size: 0.9rem;">
+        Por: {noticia.author.email}
+      </p>
+    )}
+  </article>
+</Layout>

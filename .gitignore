@@ -1,0 +1,63 @@
+# Dependencies
+**/node_modules/
+**/vendor/
+
+# Production builds
+**/dist/
+**/build/
+frontend/dist/
+backend/build/
+
+# Astro
+.astro/
+.astro/local/
+
+postgres_data/
+
+# Logs
+**/*.log
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+**/.env*
+.env.local*
+.env.*.local*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+**/coverage/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.vscode/settings.json
+.vscode/launch.json  # optional
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+**/.dockerignore  # optional, if not committing
+docker-compose.override.yml
+
+# Misc
+**/*.bak
+**/*.tmp
+tmp/
+temp/

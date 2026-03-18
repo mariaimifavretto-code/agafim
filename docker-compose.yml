@@ -1,0 +1,51 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:4321"
+    depends_on:
+      - payload-cms
+    environment:
+      - NODE_ENV=production
+      - SITE_URL=http://localhost:4321
+      - PAYLOAD_URL=http://backend:3001
+    networks:
+      - agafim-network
+
+  payload-cms:
+    build:
+      context: ./agafim-cms
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://payload:sua_senha_aqui@db:5432/agafim-cms
+      - PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3001
+    networks:
+      - agafim-network
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: payload
+      POSTGRES_PASSWORD: sua_senha_aqui
+      POSTGRES_DB: agafim-cms
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - agafim-network
+
+volumes:
+  backend_data:
+
+networks:
+  agafim-network:
+    driver: bridge

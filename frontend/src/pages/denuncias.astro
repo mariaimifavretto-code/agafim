@@ -1,0 +1,81 @@
+---
+import Layout from '../components/Layout.astro';
+import { submitDenuncia } from '../lib/api';
+
+let success = false;
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const type = formData.get('type') as string;
+    const description = formData.get('description') as string;
+    const email = formData.get('email') as string;
+
+    if (!type || !description) {
+      error = 'Tipo e descrição são obrigatórios.';
+    } else {
+      const result = await submitDenuncia({
+        type: type as 'denuncia' | 'sugestao' | 'outro',
+        description,
+        email: email || undefined,
+      });
+
+      if (result) {
+        success = true;
+      } else {
+        error = 'Erro ao enviar denúncia. Tente novamente.';
+      }
+    }
+  } catch (err) {
+    error = 'Erro inesperado. Tente novamente.';
+  }
+}
+---
+
+<Layout title="Denúncias" description="Canal de denúncias para associados e público em geral.">
+  <section class="card">
+    <h2>Denúncias</h2>
+
+    <p>
+      Este canal permite o envio de denúncias ou relatos de irregularidades relacionados ao exercício profissional.
+      As informações são tratadas com confidencialidade e encaminhadas à equipe responsável.
+    </p>
+
+    {success ? (
+      <div class="card" style="background: rgba(0, 128, 0, 0.1); border-color: rgba(0, 128, 0, 0.3);">
+        <h3>Denúncia enviada com sucesso!</h3>
+        <p>Sua denúncia foi registrada e será analisada pela equipe responsável. Obrigado pela colaboração.</p>
+        <a href="/" style="margin-top: 1rem; display: inline-block;">Voltar ao início</a>
+      </div>
+    ) : (
+      <form action="/denuncias" method="POST" style="margin-top: 1.5rem;">
+        {error && (
+          <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; color: #ff6b6b;">
+            {error}
+          </div>
+        )}
+
+        <label style="display: block; margin: 0.75rem 0 0.35rem;">Tipo</label>
+        <select name="type" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" required>
+          <option value="">Selecione</option>
+          <option value="denuncia">Denúncia</option>
+          <option value="sugestao">Sugestão</option>
+          <option value="outro">Outro</option>
+        </select>
+
+        <label style="display: block; margin: 0.75rem 0 0.35rem;">Descrição</label>
+        <textarea name="description" rows="6" placeholder="Descreva sua denúncia ou sugestão..." style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" required></textarea>
+
+        <label style="display: block; margin: 0.75rem 0 0.35rem;">Seu e-mail (opcional)</label>
+        <input name="email" type="email" placeholder="seu@email.com" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
+
+        <button type="submit" style="margin-top: 1rem;">Enviar denúncia</button>
+      </form>
+    )}
+
+    <p style="margin-top: 1rem; color: var(--muted); font-size: 0.95rem;">
+      As denúncias são armazenadas no sistema seguro e só são acessíveis por administradores.
+    </p>
+  </section>
+</Layout>

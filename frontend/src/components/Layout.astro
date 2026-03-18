@@ -1,0 +1,50 @@
+---
+import '../styles/global.css';
+import Navbar from './Navbar.astro';
+
+const { title = 'AGAFIM', description = '' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | AGAFIM</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/assets/logo.png" />
+  </head>
+  <body>
+    <header>
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="hero-brand">
+            <img src="/assets/logo.png" alt="AGAFIM" class="hero-logo" />
+            <div>
+              <h1>Associação Gaúcha dos Auditores e Fiscais Tributários Municipais</h1>
+              <p>Fundada em 02 de agosto de 2016 · Porto Alegre - RS</p>
+              <p class="hero-tagline">Defesa de direitos, fortalecimento da carreira e integração dos associados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Navbar current={Astro.url.pathname} />
+    </header>
+
+    <main class="container" id="content">
+      <slot />
+    </main>
+
+    <footer class="container py-8">
+      <hr class="border-white/12" />
+      <div class="flex justify-between items-center flex-wrap gap-4 pt-6">
+        <div>
+          <strong>AGAFIM</strong> — Associação Gaúcha dos Auditores e Fiscais Tributários Municipais.
+        </div>
+        <div class="text-muted text-sm">
+          © {new Date().getFullYear()} AGAFIM. Todos os direitos reservados.
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+

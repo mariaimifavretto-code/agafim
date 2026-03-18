@@ -1,0 +1,37 @@
+---
+import Layout from '../components/Layout.astro';
+---
+<Layout title="Estatuto" description="Consulte o Estatuto completo da AGAFIM.">
+  <div class="container page">
+    <header class="hero" aria-hidden="false">
+      <div class="hero-inner">
+        <div class="hero-brand">
+          <h1>Estatuto</h1>
+          <p class="text-muted hero-tagline">Consulte o Estatuto completo da AGAFIM.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="card content">
+      <p class="lead">
+        Leia o Estatuto da AGAFIM diretamente no navegador ou faça o download do documento completo.
+      </p>
+
+      <div class="roles-grid" style="margin: 2rem 0;">
+        <a href="/assets/Estatuto - versão 07.03.2026.pdf" class="role-card" target="_blank" rel="noopener" style="justify-content: center; text-decoration: none;">
+          Baixar PDF
+        </a>
+      </div>
+
+      <div style="border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+        <iframe
+          src="/assets/Estatuto - versão 07.03.2026.pdf"
+          width="100%"
+          height="700"
+          style="border: none;"
+          title="Estatuto AGAFIM"
+        ></iframe>
+      </div>
+    </main>
+  </div>
+</Layout>
