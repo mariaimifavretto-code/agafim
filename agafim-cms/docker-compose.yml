@@ -7,29 +7,17 @@ services:
       - .:/home/node/app
       - node_modules:/home/node/app/node_modules
     working_dir: /home/node/app/
-    environment:
-      - HOST=0.0.0.0
-      - PORT=3001
     command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev -- -p 3001 -H 0.0.0.0"
     depends_on:
       # - mongo
       - postgres
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=postgresql://payload:uma_senha_muito_forte_123@postgres:5432/agafim_cms
+      - HOST=0.0.0.0
+      - PORT=3001
 
-  # Ensure your DATABASE_URL uses 'mongo' as the hostname ie. mongodb://mongo/my-db-name
-  # mongo:
-  #   image: mongo:latest
-  #   ports:
-  #     - '27017:27017'
-  #   command:
-  #     - --storageEngine=wiredTiger
-  #   volumes:
-  #     - data:/data/db
-  #   logging:
-  #     driver: none
-
-  # Uncomment the following to use postgres
   postgres:
     restart: always
     image: postgres:latest

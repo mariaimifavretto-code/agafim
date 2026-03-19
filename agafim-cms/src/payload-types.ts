@@ -199,7 +199,10 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  category: 'jurídico' | 'parlamentar';
   author?: (number | null) | User;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -236,6 +239,8 @@ export interface Noticia {
     [k: string]: unknown;
   };
   author?: (number | null) | User;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -398,7 +403,10 @@ export interface PostsSelect<T extends boolean = true> {
   slug?: T;
   summary?: T;
   content?: T;
+  category?: T;
   author?: T;
+  status?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -414,6 +422,8 @@ export interface NoticiasSelect<T extends boolean = true> {
   summary?: T;
   content?: T;
   author?: T;
+  status?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

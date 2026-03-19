@@ -2,9 +2,10 @@
 
 Este repositório contém o website da AGAFIM (Associação Gaúcha de Auditores Fiscais da Receita Estadual do Rio Grande do Sul) com:
 
-- `frontend/`: Site criado com **Astro** (server-side rendering), incluindo navegação responsiva e páginas institucionais
-- `agafim-cms/`: **Payload CMS** para gerenciar notícias, denúncias e usuários
+- `frontend/`: Site criado com **Astro** (server-side rendering, porta interna 4321 → 3000), incluindo navegação responsiva e páginas institucionais
+- `agafim-cms/`: **Payload CMS v3.79.1** para gerenciar notícias, denúncias e usuários (porta 3001)
 - `docker-compose.yml`: Configuração completa para executar tudo em containers Docker
+- `postgres_data/`: Volume para dados PostgreSQL
 
 ## 🚀 Como executar
 
@@ -22,11 +23,13 @@ docker-compose up -d --build
 ```
 
 **Serviços disponíveis:**
-- **Website**: http://localhost:3000
+- **Website (Astro)**: http://localhost:3000 (porta interna 4321)
+- **Payload CMS Admin**: http://localhost:3001
+- **PostgreSQL DB**: localhost:5432
 
 ### Opção 2: Desenvolvimento Local
 
-#### Backend (Payload CMS)
+#### Payload CMS (agafim-cms)
 
 ```bash
 cd agafim-cms
@@ -44,21 +47,17 @@ npm run dev
 
 ## ⚙️ Configuração de ambiente
 
-Para desenvolvimento local, copie o arquivo de exemplo de variáveis de ambiente:
+Para desenvolvimento local, configure as variáveis de ambiente em agafim-cms/ (DATABASE_URL=postgresql://..., etc.):
 
-```bash
-cd backend
-cp .env.example .env
-```
-
-As variáveis de ambiente já estão configuradas no `docker-compose.yml` para uso em containers.
+As variáveis de ambiente já estão configuradas no `docker-compose.yml` para uso em containers (veja DATABASE_URL, PAYLOAD_PUBLIC_SERVER_URL, etc.).
 
 ## 🐳 Arquitetura Docker
 
-- **Frontend**: Astro com server-side rendering, executando em Node.js
-- **Backend**: Strapi v5 com SQLite (dados persistidos em volume Docker)
-- **Rede**: Comunicação interna entre containers via `agafim-network`
-- **Volumes**: Dados do banco persistem em `backend_data`
+- **Frontend**: Astro com server-side rendering em Node.js (porta 4321 → 3000), PAYLOAD_URL=http://backend:3001
+- **Payload CMS**: v3.79.1 com Next.js admin (porta 3001), conecta ao PostgreSQL
+- **DB**: PostgreSQL 15 (service 'db', porta 5432), credenciais payload/sua_senha_aqui
+- **Rede**: `agafim-network`
+- **Volumes**: `postgres_data` para persistência do banco
 
 ## 🛠️ Comandos Docker úteis
 
@@ -70,7 +69,7 @@ docker-compose ps
 docker-compose logs -f
 
 # Ver logs de um serviço específico
-docker-compose logs -f backend
+docker-compose logs -f payload-cms
 docker-compose logs -f frontend
 
 # Parar serviços
@@ -87,19 +86,22 @@ docker-compose up --build -d
 
 ```
 agafim/
-├── frontend/           # Astro frontend
+├── frontend/           # Astro frontend (SSR, porta 4321)
 │   ├── src/
-│   │   ├── components/ # Componentes reutilizáveis
-│   │   ├── pages/      # Páginas do site
-│   │   └── lib/        # Utilitários e API
-│   ├── public/         # Assets estáticos
+│   │   ├── components/ # Componentes reutilizáveis (ex: Layout, Navbar)
+│   │   ├── pages/      # Páginas institucionais (denuncias, noticias, etc.)
+│   │   └── lib/        # API client para Payload (api.ts)
+│   ├── public/         # Assets estáticos (logo, estatuto PDF)
 │   └── Dockerfile
-├── backend/            # Strapi CMS
+├── agafim-cms/         # Payload CMS v3 + Next.js admin (porta 3001)
 │   ├── src/
-│   │   └── api/        # Content Types e rotas
-│   ├── config/         # Configurações Strapi
-│   └── Dockerfile
-├── docker-compose.yml  # Configuração Docker
+│   │   ├── collections/ # News, Denuncias, Posts, Users
+│   │   ├── app/         # Rotas Next.js (frontend + payload admin)
+│   │   └── payload.config.ts
+│   ├── Dockerfile
+│   └── package.json    # payload@3.79.1, @payloadcms/*
+├── docker-compose.yml  # Frontend + payload-cms + db (postgres:15)
+├── postgres_data/      # Volume DB persistente
 └── README.md
 ```
 
@@ -107,9 +109,9 @@ agafim/
 
 - ✅ **Navegação responsiva** com ícones Lucide
 - ✅ **Páginas institucionais** populadas com conteúdo do Estatuto
-- ✅ **Sistema de notícias** integrado com Strapi
-- ✅ **Formulário de denúncias** com envio para Strapi
-- ✅ **API REST** para integração frontend/backend
+- ✅ **Sistema de notícias** integrado com Payload CMS (collections/News)
+- ✅ **Formulário de denúncias** com envio para Payload (collections/Denuncias)
+- ✅ **API client** em frontend/src/lib/api.ts para Payload REST/GraphQL
 - ✅ **Containerização** completa com Docker
 - ✅ **Persistência de dados** via volumes Docker
 
@@ -123,18 +125,19 @@ agafim/
 
 ## � Troubleshooting
 
-### Backend não inicia
-- Verifique se a porta 1337 está livre: `lsof -i :1337`
-- Limpe os dados do banco: `docker-compose down -v`
-- Verifique logs: `docker-compose logs backend`
+### Payload CMS não inicia
+- Verifique se a porta 3001 está livre: `lsof -i :3001`
+- Verifique DB (porta 5432): `docker-compose logs db`
+- Limpe dados: `docker-compose down -v`
+- Verifique logs: `docker-compose logs payload-cms`
 
 ### Frontend não carrega
-- Confirme que o backend está rodando: `docker-compose ps`
-- Verifique logs do frontend: `docker-compose logs frontend`
+- Confirme que payload-cms e db estão rodando: `docker-compose ps`
+- Verifique logs: `docker-compose logs frontend`
 - Teste conectividade: `curl http://localhost:3000`
 
 ### Conflito de portas
-- Modifique as portas no `docker-compose.yml` se 3000 ou 1337 estiverem ocupadas
+- Modifique as portas no `docker-compose.yml` se 3000, 3001 ou 5432 estiverem ocupadas
 
 ### Reset completo
 ```bash
@@ -150,7 +153,7 @@ Para deploy em produção:
 1. **Configure variáveis de ambiente** para produção (banco PostgreSQL, secrets, etc.)
 2. **Configure domínio** no `astro.config.mjs` e `docker-compose.yml`
 3. **Adicione SSL** com reverse proxy (nginx, traefik)
-4. **Configure backup** do volume `backend_data`
+4. **Configure backup** do volume `postgres_data`
 5. **Monitore logs** e recursos dos containers
 
 ### Exemplo de docker-compose.prod.yml
@@ -160,7 +163,7 @@ services:
   frontend:
     environment:
       - SITE_URL=https://www.agafim.rs.gov.br
-      - STRAPI_URL=http://backend:1337
+      - PAYLOAD_URL=http://backend:3001
     # ... resto da configuração
 ```
 

@@ -13,20 +13,35 @@ import Layout from '../components/Layout.astro';
     </header>
 
     <main class="card content">
-      <p class="lead">
-        Esta área reúne informações sobre a atuação jurídica da AGAFIM, temas regulatórios e documentos de interesse dos associados.
-      </p>
-
-      <h3>Temas frequentes</h3>
-      <ul class="checks">
-        <li>Prerrogativas e garantias do cargo de Auditor e Fiscal Tributário Municipal.</li>
-        <li>Orientações sobre processos administrativos e recursos.</li>
-        <li>Publicações e pareceres relacionados à legislação tributária municipal.</li>
-      </ul>
-
-      <p>
-        Em breve, teremos conteúdos e materiais específicos disponíveis para associados na área restrita.
-      </p>
+      <h1>Assuntos Jurídicos</h1>
+      <p class="lead">Posts e materiais sobre atuação jurídica da AGAFIM.</p>
+      
+      {posts.length === 0 ? (
+        <p>Carregando ou sem posts jurídicos disponíveis ainda.</p>
+      ) : (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post) => (
+            <article class="post-card p-6 border rounded-lg hover:shadow-lg transition-shadow">
+              <h3 class="text-xl font-bold mb-2"><a href={`/posts/${post.slug}`}>{post.title}</a></h3>
+              <p class="text-muted mb-4">{post.summary}</p>
+              <p class="text-sm text-blue-400 mb-2">Categoria: Jurídico | {new Date(post.publishedAt).toLocaleDateString()}</p>
+              <a href={`/posts/${post.slug}`} class="inline-block px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition">Ler mais</a>
+            </article>
+          ))}
+        </div>
+      )}
     </main>
+
+    <script>
+      let posts = [];
+      async function loadPosts() {
+        posts = await (await import('../lib/api.js')).fetchPostsByCategory('jurídico');
+        // Trigger Astro re-render if needed, but since client list
+        // For simplicity, use replaceChildren or full reload, but demo with window.posts = posts;
+        console.log('Posts jurídicos:', posts); // Replace with dynamic render
+      }
+      loadPosts();
+      window.postsJur = posts; // Global for debug
+    </script>
   </div>
 </Layout>

@@ -60,6 +60,20 @@ export const Posts: CollectionConfig = {
       }),
     },
     {
+      name: 'category',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Jurídico', value: 'jurídico' },
+        { label: 'Parlamentar', value: 'parlamentar' },
+      ],
+      defaultValue: 'jurídico',
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',

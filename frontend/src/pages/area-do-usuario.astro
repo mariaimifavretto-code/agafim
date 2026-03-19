@@ -6,30 +6,263 @@ import Layout from '../components/Layout.astro';
     <header class="hero" aria-hidden="false">
       <div class="hero-inner">
         <div class="hero-brand">
-          <h1>Área do Usuário</h1>
           <p class="text-muted hero-tagline">Acesso reservado para associados.</p>
         </div>
       </div>
     </header>
 
-    <main class="card content">
-      <p class="lead">
-        Em breve, será possível visualizar conteúdos exclusivos, documentos e interagir com a administração.
-      </p>
+    <main class="card content" id="admin-main">
+      <!-- Login Form -->
+      <div id="login-section">
+        <p class="lead">Área do Admin - Login</p>
+        <form id="login-form" style="margin-top: 1.5rem;">
+          <label style="display: block; margin: 0.75rem 0 0.35rem;">E-mail</label>
+          <input id="email" type="email" placeholder="admin@agafim.org.br" required style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
 
-      <form action="#" method="POST" style="margin-top: 1.5rem;" onsubmit="return false;">
-        <label style="display: block; margin: 0.75rem 0 0.35rem;">E-mail</label>
-        <input name="email" type="email" placeholder="seu@agafim.org.br" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
+          <label style="display: block; margin: 0.75rem 0 0.35rem;">Senha</label>
+          <input id="password" type="password" placeholder="Senha" required style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
 
-        <label style="display: block; margin: 0.75rem 0 0.35rem;">Senha</label>
-        <input name="password" type="password" placeholder="Senha" style="width: 100%; padding: 0.7rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28); color: var(--text);" />
+          <button type="submit" style="margin-top: 1rem; width: 100%;">Entrar</button>
+        </form>
+        <p id="login-error" class="text-red-400 hidden mt-2"></p>
+        <button id="logout-btn" class="hidden mt-4 px-4 py-2 bg-red-600 rounded" onclick="logout()">Sair</button>
+      </div>
 
-        <button type="submit" style="margin-top: 1rem;">Entrar</button>
-      </form>
+      <!-- Dashboard -->
+      <div id="dashboard-section" class="hidden">
+        <p class="lead mb-4">Painel Admin - Gerenciar Posts</p>
+        <div class="tabs mb-4">
+          <button class="tab-btn active" data-tab="posts">Posts</button>
+          <button class="tab-btn" data-tab="news">Notícias</button>
+        </div>
+        
+        <!-- Posts Tab -->
+        <div id="posts-tab" class="tab-content">
+          <div class="flex gap-2 mb-4">
+            <input id="search-posts" placeholder="Buscar por título..." class="flex-1 p-2 border rounded">
+            <select id="filter-categoria" class="p-2 border rounded">
+              <option value="">Todas categorias</option>
+              <option value="jurídico">Jurídico</option>
+              <option value="parlamentar">Parlamentar</option>
+            </select>
+            <select id="filter-status" class="p-2 border rounded">
+              <option value="">Todos status</option>
+              <option value="draft">Rascunho</option>
+              <option value="published">Publicado</option>
+              <option value="archived">Arquivado</option>
+            </select>
+            <button id="refresh-posts" class="px-4 py-2 bg-blue-600 rounded">Atualizar</button>
+            <button id="create-post-btn" class="px-4 py-2 bg-green-600 rounded">Novo Post</button>
+          </div>
+          <div id="posts-table" class="overflow-auto">
+            <!-- Table populated by JS -->
+          </div>
+        </div>
 
-      <p class="small text-muted">
-        Em integração com Payload CMS, aqui serão exibidos painéis exclusivos para membros.
-      </p>
+        <!-- News Tab stub -->
+        <div id="news-tab" class="tab-content hidden">
+          <p>Notícias CRUD em breve. Foco inicial em Posts.</p>
+        </div>
+      </div>
+
+      <!-- Create/Edit Modal -->
+      <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-screen overflow-y-auto">
+          <h3 id="modal-title" class="text-xl mb-4">Novo Post</h3>
+          <form id="post-form">
+            <label class="block mb-2">Título</label>
+            <input id="post-title" type="text" class="w-full p-2 border rounded mb-4" required>
+
+            <label class="block mb-2">Resumo</label>
+            <textarea id="post-summary" class="w-full p-2 border rounded mb-4" rows="3" required></textarea>
+
+            <label class="block mb-2">Categoria</label>
+            <select id="post-categoria" class="w-full p-2 border rounded mb-4" required>
+              <option value="jurídico">Jurídico</option>
+              <option value="parlamentar">Parlamentar</option>
+            </select>
+
+            <label class="block mb-2">Conteúdo (HTML/RichText)</label>
+            <textarea id="post-content" class="w-full p-2 border rounded mb-4" rows="10" required placeholder="Digite o conteúdo..."></textarea>
+
+            <div class="flex gap-2 justify-end">
+              <button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-600 rounded">Cancelar</button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 rounded">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
+
+    <style>
+      .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.2); }
+      .tab-btn { padding: 0.75rem 1.5rem; background: none; border: none; color: var(--text); cursor: pointer; }
+      .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+      .tab-content { padding-top: 1rem; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      .actions button { padding: 0.25rem 0.5rem; margin-right: 0.25rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem; }
+      .status-draft { background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; }
+      .status-published { background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; }
+      .status-archived { background: #6b7280; color: white; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; }
+      .hidden { display: none !important; }
+      .text-red-400 { color: #f87171; }
+      input, select, textarea { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); color: var(--text); }
+    </style>
+
+    <script is:inline>
+      let currentPosts = [];
+      let editingId = null;
+
+      // Init
+      document.addEventListener('DOMContentLoaded', async () => {
+        const apiMod = await import('../lib/api.ts');
+        const api = apiMod.default || apiMod;
+        window.api = api;
+        initEventListeners = () => {};
+        await checkAuth(api);
+      });
+
+      async function checkAuth() {
+        const me = await api.fetchMe();
+        if (me && (me.user.roles.includes('admin') || me.user.roles.includes('editor'))) {
+          document.getElementById('login-section').classList.add('hidden');
+          document.getElementById('dashboard-section').classList.remove('hidden');
+          document.getElementById('logout-btn').classList.remove('hidden');
+          await loadPosts();
+        }
+      }
+
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await api.login({ identifier: email, password });
+        if (error) {
+          document.getElementById('login-error').textContent = error;
+          document.getElementById('login-error').classList.remove('hidden');
+          return;
+        }
+        await checkAuth();
+      });
+
+      window.logout = async () => {
+        api.clearStoredToken();
+        location.reload();
+      };
+
+      // Posts CRUD
+      document.getElementById('refresh-posts').onclick = loadPosts;
+      document.getElementById('create-post-btn').onclick = () => openModal(null);
+      document.getElementById('cancel-btn').onclick = closeModal;
+      document.getElementById('post-form').onsubmit = handleSave;
+
+      ['search-posts', 'filter-categoria', 'filter-status'].forEach(id => {
+        document.getElementById(id).addEventListener('input', loadPosts);
+      });
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          e.target.classList.add('active');
+          document.getElementById(e.target.dataset.tab + '-tab').classList.remove('hidden');
+        };
+      });
+
+      async function loadPosts() {
+        const search = document.getElementById('search-posts').value.toLowerCase();
+        const categoria = document.getElementById('filter-categoria').value;
+        const status = document.getElementById('filter-status').value;
+        const res = await api.fetchPostsAdmin({ categoria, status });
+        currentPosts = res.docs.filter(p => p.title.toLowerCase().includes(search));
+        renderTable();
+      }
+
+      function renderTable() {
+        const tbody = `
+          <table>
+            <thead>
+              <tr><th>Título</th><th>Categoria</th><th>Status</th><th>Data</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+              ${currentPosts.map(p => `
+                <tr>
+                  <td>${p.title}</td>
+                  <td>${p.categoria || 'N/A'}</td>
+                  <td><span class="status-${p._status}">${p._status}</span></td>
+                  <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button onclick="editPost('${p.id}')" class="bg-yellow-600 text-white">Editar</button>
+                    <button onclick="deletePost('${p.id}')" class="bg-red-600 text-white">Excluir</button>
+                    <button onclick="togglePostStatus('${p.id}', '${p._status}')" class="bg-green-600 text-white">${p._status === 'published' ? 'Despublicar' : 'Publicar'}</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        document.getElementById('posts-table').innerHTML = tbody;
+      }
+
+      function openModal(id) {
+        editingId = id;
+        document.getElementById('modal-title').textContent = id ? 'Editar Post' : 'Novo Post';
+        if (id) {
+          const post = currentPosts.find(p => p.id === id);
+          document.getElementById('post-title').value = post.title;
+          document.getElementById('post-summary').value = post.summary;
+          document.getElementById('post-categoria').value = post.categoria;
+          document.getElementById('post-content').value = post.content?.root?.children ? JSON.stringify(post.content) : post.content || '';
+        } else {
+          document.getElementById('post-form').reset();
+          document.getElementById('post-categoria').value = 'jurídico';
+        }
+        document.getElementById('post-modal').classList.remove('hidden');
+      }
+
+      function closeModal() {
+        document.getElementById('post-modal').classList.add('hidden');
+        editingId = null;
+      }
+
+      async function handleSave(e) {
+        e.preventDefault();
+        const data = {
+          title: document.getElementById('post-title').value,
+          summary: document.getElementById('post-summary').value,
+          categoria: document.getElementById('post-categoria').value,
+          content: document.getElementById('post-content').value,
+        };
+        let post;
+        if (editingId) {
+          post = await api.updatePost(editingId, data);
+        } else {
+          post = await api.createPost(data);
+        }
+        if (post) {
+          closeModal();
+          loadPosts();
+        }
+      }
+
+      window.editPost = async (id) => {
+        const post = currentPosts.find(p => p.id === id);
+        if (post) openModal(id);
+      };
+
+      window.deletePost = async (id) => {
+        if (confirm('Confirmar exclusão?')) {
+          const success = await api.deletePost(id);
+          if (success) loadPosts();
+        }
+      };
+
+      window.togglePostStatus = async (id, currentStatus) => {
+        const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+        const post = await api.toggleStatus(id, newStatus);
+        if (post) loadPosts();
+      };
+    </script>
   </div>
 </Layout>
