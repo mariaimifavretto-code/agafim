@@ -110,159 +110,215 @@ import Layout from '../components/Layout.astro';
       input, select, textarea { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); color: var(--text); }
     </style>
 
-    <script is:inline>
-      let currentPosts = [];
-      let editingId = null;
+    <script>
+      import * as api from '../lib/api';
 
-      // Init
-      document.addEventListener('DOMContentLoaded', async () => {
-        const apiMod = await import('../lib/api.ts');
-        const api = apiMod.default || apiMod;
-        window.api = api;
-        initEventListeners = () => {};
-        await checkAuth(api);
-      });
+      // Variáveis de estado do painel
+      let currentPosts: any[] = [];
+      let editingId: string | null = null;
+
+      // --- Elementos da UI ---
+      const loginForm = document.getElementById('login-form') as HTMLFormElement;
+      const loginSection = document.getElementById('login-section');
+      const dashboardSection = document.getElementById('dashboard-section');
+      const logoutBtn = document.getElementById('logout-btn');
+      const loginError = document.getElementById('login-error');
+      const postForm = document.getElementById('post-form') as HTMLFormElement;
+      const postModal = document.getElementById('post-modal');
+
+      // --- Inicialização e Autenticação ---
 
       async function checkAuth() {
-        const me = await api.fetchMe();
-        if (me && (me.user.roles.includes('admin') || me.user.roles.includes('editor'))) {
-          document.getElementById('login-section').classList.add('hidden');
-          document.getElementById('dashboard-section').classList.remove('hidden');
-          document.getElementById('logout-btn').classList.remove('hidden');
+        const res = await api.fetchMe();
+        if (res && res.user && (res.user.roles.includes('admin') || res.user.roles.includes('editor'))) {
+          loginSection?.classList.add('hidden');
+          dashboardSection?.classList.remove('hidden');
+          logoutBtn?.classList.remove('hidden');
           await loadPosts();
+        } else {
+          // Se não estiver logado, garante que o formulário apareça
+          loginSection?.classList.remove('hidden');
+          dashboardSection?.classList.add('hidden');
         }
       }
 
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
+      loginForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { error } = await api.login({ identifier: email, password });
-        if (error) {
-          document.getElementById('login-error').textContent = error;
-          document.getElementById('login-error').classList.remove('hidden');
+        const email = (document.getElementById('email') as HTMLInputElement).value;
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+        
+        const res = await api.login({ email, password });
+        
+        if (res.error) {
+          if (loginError) {
+            loginError.textContent = res.error;
+            loginError.classList.remove('hidden');
+          }
           return;
         }
-        await checkAuth();
+
+        if (res.jwt) {
+          api.setStoredToken(res.jwt);
+          await checkAuth();
+        }
       });
 
-      window.logout = async () => {
+      // Funções globais para o navegador (necessárias para onclick no HTML string)
+      (window as any).logout = () => {
         api.clearStoredToken();
         location.reload();
       };
 
-      // Posts CRUD
-      document.getElementById('refresh-posts').onclick = loadPosts;
-      document.getElementById('create-post-btn').onclick = () => openModal(null);
-      document.getElementById('cancel-btn').onclick = closeModal;
-      document.getElementById('post-form').onsubmit = handleSave;
-
-      ['search-posts', 'filter-categoria', 'filter-status'].forEach(id => {
-        document.getElementById(id).addEventListener('input', loadPosts);
-      });
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = (e) => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-          e.target.classList.add('active');
-          document.getElementById(e.target.dataset.tab + '-tab').classList.remove('hidden');
-        };
-      });
+      // --- CRUD de Posts ---
 
       async function loadPosts() {
-        const search = document.getElementById('search-posts').value.toLowerCase();
-        const categoria = document.getElementById('filter-categoria').value;
-        const status = document.getElementById('filter-status').value;
-        const res = await api.fetchPostsAdmin({ categoria, status });
-        currentPosts = res.docs.filter(p => p.title.toLowerCase().includes(search));
-        renderTable();
+        const search = (document.getElementById('search-posts') as HTMLInputElement).value.toLowerCase();
+        const categoria = (document.getElementById('filter-categoria') as HTMLSelectElement).value;
+        const status = (document.getElementById('filter-status') as HTMLSelectElement).value;
+        
+        const res = await api.fetchPostsAdmin({ category: categoria, status });
+        
+        if (res && res.docs) {
+          currentPosts = res.docs.filter((p: any) => p.title.toLowerCase().includes(search));
+          renderTable();
+        }
       }
 
       function renderTable() {
-        const tbody = `
+        const container = document.getElementById('posts-table');
+        if (!container) return;
+
+        if (currentPosts.length === 0) {
+          container.innerHTML = '<p class="p-4 text-center text-gray-400">Nenhum post encontrado.</p>';
+          return;
+        }
+
+        const tableHTML = `
           <table>
             <thead>
-              <tr><th>Título</th><th>Categoria</th><th>Status</th><th>Data</th><th>Ações</th></tr>
+              <tr>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+              </tr>
             </thead>
             <tbody>
               ${currentPosts.map(p => `
                 <tr>
-                  <td>${p.title}</td>
-                  <td>${p.categoria || 'N/A'}</td>
+                  <td class="font-medium">${p.title}</td>
+                  <td><span class="capitalize">${p.category || 'N/A'}</span></td>
                   <td><span class="status-${p._status}">${p._status}</span></td>
-                  <td>${new Date(p.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <button onclick="editPost('${p.id}')" class="bg-yellow-600 text-white">Editar</button>
-                    <button onclick="deletePost('${p.id}')" class="bg-red-600 text-white">Excluir</button>
-                    <button onclick="togglePostStatus('${p.id}', '${p._status}')" class="bg-green-600 text-white">${p._status === 'published' ? 'Despublicar' : 'Publicar'}</button>
+                  <td>${new Date(p.createdAt).toLocaleDateString('pt-BR')}</td>
+                  <td class="actions">
+                    <button onclick="window.editPost('${p.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-3 py-1 rounded">Editar</button>
+                    <button onclick="window.togglePostStatus('${p.id}', '${p._status}')" class="bg-green-600/20 text-green-400 hover:bg-green-600/40 px-3 py-1 rounded">
+                      ${p._status === 'published' ? 'Despublicar' : 'Publicar'}
+                    </button>
+                    <button onclick="window.deletePost('${p.id}')" class="bg-red-600/20 text-red-400 hover:bg-red-600/40 px-3 py-1 rounded">Excluir</button>
                   </td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
         `;
-        document.getElementById('posts-table').innerHTML = tbody;
+        container.innerHTML = tableHTML;
       }
 
-      function openModal(id) {
+      // --- Modal e Formulário ---
+
+      (window as any).openModal = (id: string | null = null) => {
         editingId = id;
-        document.getElementById('modal-title').textContent = id ? 'Editar Post' : 'Novo Post';
+        const titleEl = document.getElementById('modal-title');
+        if (titleEl) titleEl.textContent = id ? 'Editar Post' : 'Novo Post';
+
         if (id) {
           const post = currentPosts.find(p => p.id === id);
-          document.getElementById('post-title').value = post.title;
-          document.getElementById('post-summary').value = post.summary;
-          document.getElementById('post-categoria').value = post.categoria;
-          document.getElementById('post-content').value = post.content?.root?.children ? JSON.stringify(post.content) : post.content || '';
+          if (post) {
+            (document.getElementById('post-title') as HTMLInputElement).value = post.title;
+            (document.getElementById('post-summary') as HTMLTextAreaElement).value = post.summary;
+            (document.getElementById('post-categoria') as HTMLSelectElement).value = post.category || 'jurídico';
+            // Se for RichText do Payload, convertemos para string para o textarea simples
+            (document.getElementById('post-content') as HTMLTextAreaElement).value = 
+              typeof post.content === 'object' ? JSON.stringify(post.content, null, 2) : post.content || '';
+          }
         } else {
-          document.getElementById('post-form').reset();
-          document.getElementById('post-categoria').value = 'jurídico';
+          postForm.reset();
+          (document.getElementById('post-categoria') as HTMLSelectElement).value = 'jurídico';
         }
-        document.getElementById('post-modal').classList.remove('hidden');
-      }
+        postModal?.classList.remove('hidden');
+      };
 
-      function closeModal() {
-        document.getElementById('post-modal').classList.add('hidden');
+      (window as any).closeModal = () => {
+        postModal?.classList.add('hidden');
         editingId = null;
-      }
+      };
 
-      async function handleSave(e) {
+      postForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = {
-          title: document.getElementById('post-title').value,
-          summary: document.getElementById('post-summary').value,
-          categoria: document.getElementById('post-categoria').value,
-          content: document.getElementById('post-content').value,
+          title: (document.getElementById('post-title') as HTMLInputElement).value,
+          summary: (document.getElementById('post-summary') as HTMLTextAreaElement).value,
+          category: (document.getElementById('post-categoria') as HTMLSelectElement).value as 'jurídico' | 'parlamentar',
+          content: (document.getElementById('post-content') as HTMLTextAreaElement).value,
         };
-        let post;
+
+        let result;
         if (editingId) {
-          post = await api.updatePost(editingId, data);
+          result = await api.updatePost(editingId, data);
         } else {
-          post = await api.createPost(data);
+          result = await api.createPost(data);
         }
-        if (post) {
-          closeModal();
-          loadPosts();
+
+        if (result) {
+          (window as any).closeModal();
+          await loadPosts();
         }
-      }
+      });
 
-      window.editPost = async (id) => {
-        const post = currentPosts.find(p => p.id === id);
-        if (post) openModal(id);
-      };
+      // --- Ações de Linha ---
 
-      window.deletePost = async (id) => {
-        if (confirm('Confirmar exclusão?')) {
+      (window as any).editPost = (id: string) => (window as any).openModal(id);
+
+      (window as any).deletePost = async (id: string) => {
+        if (confirm('Tem certeza que deseja excluir este post permanentemente?')) {
           const success = await api.deletePost(id);
-          if (success) loadPosts();
+          if (success) await loadPosts();
         }
       };
 
-      window.togglePostStatus = async (id, currentStatus) => {
+      (window as any).togglePostStatus = async (id: string, currentStatus: string) => {
         const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-        const post = await api.toggleStatus(id, newStatus);
-        if (post) loadPosts();
+        const res = await api.toggleStatus(id, newStatus as any);
+        if (res) await loadPosts();
       };
+
+      // --- Eventos de Filtro ---
+
+      document.getElementById('refresh-posts')?.addEventListener('click', loadPosts);
+      document.getElementById('create-post-btn')?.addEventListener('click', () => (window as any).openModal(null));
+      document.getElementById('cancel-btn')?.addEventListener('click', () => (window as any).closeModal());
+
+      ['search-posts', 'filter-categoria', 'filter-status'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', loadPosts);
+      });
+
+      // Troca de Tabs
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.target as HTMLElement;
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          
+          target.classList.add('active');
+          const tabId = target.dataset.tab + '-tab';
+          document.getElementById(tabId)?.classList.remove('hidden');
+        });
+      });
+
+      // Início
+      checkAuth();
     </script>
   </div>
 </Layout>

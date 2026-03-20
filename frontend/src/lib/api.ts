@@ -1,5 +1,5 @@
 // API helper for Payload CMS integration
-const PAYLOAD_URL = process.env.PAYLOAD_URL || 'http://localhost:3001';
+const PAYLOAD_URL = import.meta.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001';
 
 export interface Noticia {
   id: string;
@@ -137,7 +137,7 @@ export async function fetchDenuncias(): Promise<Denuncia[]> {
 
 // Auth helpers (for future implementation)
 export interface LoginData {
-  identifier: string;
+  email: string;
   password: string;
 }
 
