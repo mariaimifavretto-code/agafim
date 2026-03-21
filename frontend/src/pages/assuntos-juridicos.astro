@@ -1,5 +1,9 @@
 ---
 import Layout from '../components/Layout.astro';
+import { fetchPostsByCategory } from '../lib/api';
+export const prerender = false;
+
+const posts = await fetchPostsByCategory('jurídico');
 ---
 <Layout title="Assuntos Jurídicos" description="Informações sobre atuação jurídica e documentos relacionados.">
   <div class="container page">
@@ -33,15 +37,17 @@ import Layout from '../components/Layout.astro';
     </main>
 
     <script>
-      let posts = [];
-      async function loadPosts() {
-        posts = await (await import('../lib/api.js')).fetchPostsByCategory('jurídico');
-        // Trigger Astro re-render if needed, but since client list
-        // For simplicity, use replaceChildren or full reload, but demo with window.posts = posts;
-        console.log('Posts jurídicos:', posts); // Replace with dynamic render
+      // Optional client-side refresh button could trigger this
+      async function refreshPosts() {
+        const { fetchPostsByCategory } = await import('../lib/api');
+        const newPosts = await fetchPostsByCategory('jurídico');
+        console.log('Refreshed posts jurídicos:', newPosts);
+        // Could update UI here
       }
-      loadPosts();
-      window.postsJur = posts; // Global for debug
+      // Add refresh button to page if desired
+      if (typeof window !== 'undefined') {
+        (window as any).refreshPostsJur = refreshPosts;
+      }
     </script>
   </div>
 </Layout>

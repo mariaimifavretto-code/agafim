@@ -1,5 +1,9 @@
 ---
 import Layout from '../components/Layout.astro';
+import { fetchPostsByCategory } from '../lib/api';
+export const prerender = false;
+
+const posts = await fetchPostsByCategory('parlamentar');
 ---
 <Layout title="Assuntos Parlamentares" description="Ações e posicionamentos da AGAFIM sobre temas parlamentares.">
   <div class="container page">
@@ -33,13 +37,15 @@ import Layout from '../components/Layout.astro';
     </main>
 
     <script>
-      let posts = [];
-      async function loadPosts() {
-        posts = await (await import('../lib/api.js')).fetchPostsByCategory('parlamentar');
-        console.log('Posts parlamentares:', posts);
+      // Optional client-side refresh
+      async function refreshPosts() {
+        const { fetchPostsByCategory } = await import('../lib/api');
+        const newPosts = await fetchPostsByCategory('parlamentar');
+        console.log('Refreshed posts parlamentares:', newPosts);
       }
-      loadPosts();
-      window.postsPar = posts;
+      if (typeof window !== 'undefined') {
+        (window as any).refreshPostsPar = refreshPosts;
+      }
     </script>
   </div>
 </Layout>

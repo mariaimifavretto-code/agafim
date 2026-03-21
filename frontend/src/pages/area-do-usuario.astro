@@ -65,34 +65,47 @@ import Layout from '../components/Layout.astro';
         </div>
       </div>
 
-      <!-- Create/Edit Modal -->
-      <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-screen overflow-y-auto">
-          <h3 id="modal-title" class="text-xl mb-4">Novo Post</h3>
-          <form id="post-form">
-            <label class="block mb-2">Título</label>
-            <input id="post-title" type="text" class="w-full p-2 border rounded mb-4" required>
-
-            <label class="block mb-2">Resumo</label>
-            <textarea id="post-summary" class="w-full p-2 border rounded mb-4" rows="3" required></textarea>
-
-            <label class="block mb-2">Categoria</label>
-            <select id="post-categoria" class="w-full p-2 border rounded mb-4" required>
-              <option value="jurídico">Jurídico</option>
-              <option value="parlamentar">Parlamentar</option>
-            </select>
-
-            <label class="block mb-2">Conteúdo (HTML/RichText)</label>
-            <textarea id="post-content" class="w-full p-2 border rounded mb-4" rows="10" required placeholder="Digite o conteúdo..."></textarea>
-
-            <div class="flex gap-2 justify-end">
-              <button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-600 rounded">Cancelar</button>
-              <button type="submit" class="px-4 py-2 bg-blue-600 rounded">Salvar</button>
-            </div>
-          </form>
-        </div>
-      </div>
     </main>
+
+    <!-- True Full-Screen Modal (outside main/container for proper overlay) -->
+    <div id="post-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[9999] flex items-center justify-center p-6 overflow-y-auto">
+      <div class="bg-gray-800/95 p-8 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl border border-gray-700">
+        <div class="flex justify-between items-center mb-6">
+          <h3 id="modal-title" class="text-2xl font-bold">Novo Post</h3>
+          <button id="close-modal-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+        <form id="post-form">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block mb-3 font-medium">Título</label>
+              <input id="post-title" type="text" class="w-full p-4 border border-gray-600 rounded-xl bg-gray-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+            </div>
+            <div>
+              <label class="block mb-3 font-medium">Categoria</label>
+              <select id="post-categoria" class="w-full p-4 border border-gray-600 rounded-xl bg-gray-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <option value="jurídico">Jurídico</option>
+                <option value="parlamentar">Parlamentar</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-6">
+            <label class="block mb-3 font-medium">Resumo</label>
+            <textarea id="post-summary" class="w-full p-4 border border-gray-600 rounded-xl bg-gray-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" required></textarea>
+          </div>
+
+          <div class="mb-8">
+            <label class="block mb-3 font-medium">Conteúdo (Texto simples → auto convertido para RichText)</label>
+            <textarea id="post-content" class="w-full h-64 p-4 border border-gray-600 rounded-xl bg-gray-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" required placeholder="Digite o conteúdo do post aqui..."></textarea>
+          </div>
+
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-btn" class="px-8 py-3 bg-gray-600/50 hover:bg-gray-600 text-white font-medium rounded-xl transition-all duration-200">Cancelar</button>
+            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">Salvar Post</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <style>
       .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.2); }
@@ -173,10 +186,10 @@ import Layout from '../components/Layout.astro';
 
       async function loadPosts() {
         const search = (document.getElementById('search-posts') as HTMLInputElement).value.toLowerCase();
-        const categoria = (document.getElementById('filter-categoria') as HTMLSelectElement).value;
+        const category = (document.getElementById('filter-categoria') as HTMLSelectElement).value;
         const status = (document.getElementById('filter-status') as HTMLSelectElement).value;
         
-        const res = await api.fetchPostsAdmin({ category: categoria, status });
+        const res = await api.fetchPostsAdmin({ category, status });
         
         if (res && res.docs) {
           currentPosts = res.docs.filter((p: any) => p.title.toLowerCase().includes(search));
@@ -209,12 +222,12 @@ import Layout from '../components/Layout.astro';
                 <tr>
                   <td class="font-medium">${p.title}</td>
                   <td><span class="capitalize">${p.category || 'N/A'}</span></td>
-                  <td><span class="status-${p._status}">${p._status}</span></td>
+                  <td><span class="status-${p.status}">${p.status}</span></td>
                   <td>${new Date(p.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td class="actions">
                     <button onclick="window.editPost('${p.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-3 py-1 rounded">Editar</button>
-                    <button onclick="window.togglePostStatus('${p.id}', '${p._status}')" class="bg-green-600/20 text-green-400 hover:bg-green-600/40 px-3 py-1 rounded">
-                      ${p._status === 'published' ? 'Despublicar' : 'Publicar'}
+                    <button onclick="window.togglePostStatus('${p.id}', '${p.status}')" class="bg-green-600/20 text-green-400 hover:bg-green-600/40 px-3 py-1 rounded">
+                      ${p.status === 'published' ? 'Despublicar' : 'Publicar'}
                     </button>
                     <button onclick="window.deletePost('${p.id}')" class="bg-red-600/20 text-red-400 hover:bg-red-600/40 px-3 py-1 rounded">Excluir</button>
                   </td>
@@ -247,11 +260,17 @@ import Layout from '../components/Layout.astro';
           postForm.reset();
           (document.getElementById('post-categoria') as HTMLSelectElement).value = 'jurídico';
         }
+        
+        // Show modal + lock scroll
         postModal?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.body.style.paddingRight = window.innerWidth - document.documentElement.clientWidth + 'px';
       };
 
       (window as any).closeModal = () => {
         postModal?.classList.add('hidden');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
         editingId = null;
       };
 
@@ -262,6 +281,7 @@ import Layout from '../components/Layout.astro';
           summary: (document.getElementById('post-summary') as HTMLTextAreaElement).value,
           category: (document.getElementById('post-categoria') as HTMLSelectElement).value as 'jurídico' | 'parlamentar',
           content: (document.getElementById('post-content') as HTMLTextAreaElement).value,
+          status: editingId ? undefined : 'draft', // Only set on create
         };
 
         let result;
@@ -299,6 +319,7 @@ import Layout from '../components/Layout.astro';
       document.getElementById('refresh-posts')?.addEventListener('click', loadPosts);
       document.getElementById('create-post-btn')?.addEventListener('click', () => (window as any).openModal(null));
       document.getElementById('cancel-btn')?.addEventListener('click', () => (window as any).closeModal());
+      document.getElementById('close-modal-btn')?.addEventListener('click', () => (window as any).closeModal());
 
       ['search-posts', 'filter-categoria', 'filter-status'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', loadPosts);

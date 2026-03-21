@@ -183,6 +183,52 @@ export function clearStoredToken(): void {
   }
 }
 
+// Helper to convert plain HTML/text to Lexical JSON
+function htmlToLexical(content: string): any {
+  // Basic converter: treat as single paragraph. Enhance for full HTML later.
+  if (!content || content.trim() === '') {
+    return {
+      root: {
+        children: [],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    };
+  }
+  return {
+    root: {
+      children: [
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: 'normal',
+              style: '',
+              text: content,
+              type: 'text',
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          type: 'paragraph',
+          version: 1,
+        },
+      ],
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      type: 'root',
+      version: 1,
+    },
+  };
+}
+
 // Admin functions
 export async function fetchMe(): Promise<{ user: { roles: string[] } } | null> {
   const token = getStoredToken();
@@ -208,13 +254,18 @@ export interface CreatePostData {
 export async function createPost(data: CreatePostData): Promise<Post | null> {
   const token = getStoredToken();
   try {
+    const payloadData = {
+      ...data,
+      _status: 'draft',
+      content: htmlToLexical(data.content),  // Convert to Lexical JSON
+    };
     const response = await fetch(`${PAYLOAD_URL}/api/posts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `JWT ${token}`,
       },
-      body: JSON.stringify({ ...data, status: 'draft' }),
+      body: JSON.stringify(payloadData),
     });
     if (!response.ok) return null;
     return await response.json();
@@ -263,7 +314,7 @@ export async function toggleStatus(id: string, status: 'draft' | 'published' | '
         'Content-Type': 'application/json',
         Authorization: `JWT ${token}`,
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ tatus }),
     });
     if (!response.ok) return null;
     return await response.json();
@@ -293,7 +344,7 @@ export async function fetchPostsAdmin(params: { limit?: number; page?: number; c
 
 export async function fetchPostsByCategory(category: 'jurídico' | 'parlamentar'): Promise<Post[]> {
   try {
-    const response = await fetch(`${PAYLOAD_URL}/api/posts?where[_status][equals]=published&where[category][equals]=${category}&sort=-createdAt&limit=20&depth=2`);
+    const response = await fetch(`${PAYLOAD_URL}/api/posts?where[status][equals]=published&where[category][equals]=${category}&sort=-createdAt&limit=20&depth=2`);
     const data = await response.json();
     return data.docs || [];
   } catch {
