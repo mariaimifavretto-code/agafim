@@ -5,17 +5,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "start": "bun ./dist/server/entry.mjs"
+    "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/node": "^10.0.3",
     "astro": "^6.0.7",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
-    "@tailwindcss/postcss": "^4.2.2" 
+    "@tailwindcss/postcss": "^4.2.2"
   }
 }

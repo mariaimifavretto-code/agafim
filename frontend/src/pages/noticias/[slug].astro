@@ -1,6 +1,13 @@
 ---
 import Layout from '../../components/Layout.astro';
-import { fetchNoticiaBySlug, type Noticia } from '../../lib/api';
+import { fetchNoticiaBySlug, fetchNoticias, type Noticia } from '../../lib/api';
+
+export async function getStaticPaths() {
+  const noticias = await fetchNoticias();
+  return noticias.map(noticia => ({
+    params: { slug: noticia.slug },
+  }));
+}
 
 const { slug } = Astro.params;
 

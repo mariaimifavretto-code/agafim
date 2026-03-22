@@ -1,7 +1,7 @@
 ---
 import Layout from '../components/Layout.astro';
 import { fetchPostsByCategory } from '../lib/api';
-export const prerender = false;
+export const prerender = true;
 
 const posts = await fetchPostsByCategory('jurídico');
 ---
