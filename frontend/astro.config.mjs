@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   site: 'https://mariaimifavretto-code.github.io/agafim/',
+  base: '/agafim/',
   output: 'static',
   integrations: [],
   vite: {
