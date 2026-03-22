@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+const base = import.meta.env.BASE_URL;
 ---
 <Layout title="Home" description="Site oficial da AGAFIM - Associação Gaúcha dos Auditores e Fiscais Tributários Municipais">
   <div class="container page">
@@ -17,16 +18,16 @@ import Layout from '../components/Layout.astro';
       </p>
 
       <div class="roles-grid">
-        <a class="role-card" href="/noticias" style="text-decoration: none;">
+        <a class="role-card" href={`${base}noticias`} style="text-decoration: none;">
           Notícias
         </a>
-        <a class="role-card" href="/estatuto" style="text-decoration: none;">
+        <a class="role-card" href={`${base}estatuto`} style="text-decoration: none;">
           Estatuto
         </a>
-        <a class="role-card" href="/denuncias" style="text-decoration: none;">
+        <a class="role-card" href={`${base}denuncias`} style="text-decoration: none;">
           Denúncias
         </a>
-        <a class="role-card" href="/area-do-usuario" style="text-decoration: none;">
+        <a class="role-card" href={`${base}area-do-usuario`} style="text-decoration: none;">
           Área do Usuário
         </a>
       </div>

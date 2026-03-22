@@ -1,18 +1,19 @@
 ---
 const { current = '' } = Astro.props;
+const base = import.meta.env.BASE_URL;
 
 const navItems = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/sobre', label: 'Sobre', icon: 'info' },
-  { href: '/estatuto', label: 'Estatuto', icon: 'paper' },
-  { href: '/filiacao', label: 'Filiação', icon: 'users' },
-  { href: '/diretoria', label: 'Diretoria', icon: 'award' },
-  { href: '/noticias', label: 'Notícias', icon: 'newspaper' },
-  { href: '/assuntos-juridicos', label: 'Assuntos Jurídicos', icon: 'gavel' },
-  { href: '/assuntos-parlamentares', label: 'Assuntos Parlamentares', icon: 'parliament' },
-  { href: '/contato', label: 'Contato', icon: 'mail' },
-  { href: '/denuncias', label: 'Denúncias', icon: 'alert' },
-  { href: '/area-do-usuario', label: 'Área do Usuário', icon: 'lock' },
+  { href: `${base}`, label: 'Home', icon: 'home' },
+  { href: `${base}sobre`, label: 'Sobre', icon: 'info' },
+  { href: `${base}estatuto`, label: 'Estatuto', icon: 'paper' },
+  { href: `${base}filiacao`, label: 'Filiação', icon: 'users' },
+  { href: `${base}diretoria`, label: 'Diretoria', icon: 'award' },
+  { href: `${base}noticias`, label: 'Notícias', icon: 'newspaper' },
+  { href: `${base}assuntos-juridicos`, label: 'Assuntos Jurídicos', icon: 'gavel' },
+  { href: `${base}assuntos-parlamentares`, label: 'Assuntos Parlamentares', icon: 'parliament' },
+  { href: `${base}contato`, label: 'Contato', icon: 'mail' },
+  { href: `${base}denuncias`, label: 'Denúncias', icon: 'alert' },
+  { href: `${base}area-do-usuario`, label: 'Área do Usuário', icon: 'lock' },
 ];
 
 const icons = {

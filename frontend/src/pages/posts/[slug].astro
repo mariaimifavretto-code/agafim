@@ -15,7 +15,7 @@ const { slug } = Astro.params
 const post: Post | null = await fetchPostBySlug(slug as string)
 
 if (!post) {
-  return Astro.redirect('/404')
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`)
 }
 ---
 
