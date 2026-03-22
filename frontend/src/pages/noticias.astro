@@ -24,7 +24,7 @@ const noticias: Noticia[] = await fetchNoticias();
       {noticias.length > 0 ? (
         <div style="display: grid; gap: 1.5rem; margin-top: 2rem;">
           {noticias.map((noticia) => (
-            <a class="card" href={`/noticias/${noticia.slug}`} style="text-decoration: none; display: block;" key={noticia.id}>
+            <a class="card" href={`./noticias/${noticia.slug}`} style="text-decoration: none; display: block;" key={noticia.id}>
               <h3>{noticia.title}</h3>
               <p class="small text-muted">
                 {noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-BR') : ''}
