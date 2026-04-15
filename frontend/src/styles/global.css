@@ -1,14 +1,14 @@
 @import 'tailwindcss';
 
 :root {
-  --bg: #052a54;
-  --bg2: #0b386b;
-  --text: #f2f2f2;
-  --muted: rgba(242, 242, 242, 0.8);
+  --bg: #042d1f;
+  --bg2: #0d4f2e;
+  --text: #eef5ec;
+  --muted: rgba(238, 245, 236, 0.8);
   --card: rgba(255, 255, 255, 0.06);
   --border: rgba(255, 255, 255, 0.12);
-  --accent: #ffd700;
-  --accent-2: #00d1b2;
+  --accent: #4ade80;
+  --accent-2: #22c55e;
   --max-width: 1024px;
 }
 
@@ -100,9 +100,53 @@ button:hover {
   }
 }
 
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.data-table th {
+  background: rgba(74, 222, 128, 0.12);
+  color: #f4f9f1;
+  text-align: left;
+  font-weight: 700;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.table-section {
+  margin-top: 2rem;
+}
+
+.table-section h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  margin-bottom: 0.8rem;
+  color: var(--accent);
+}
+
+.table-section .table-note {
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
 /* Hero header styles (centralized) */
 .hero {
-  background: radial-gradient(circle at 30% 20%, rgba(255, 215, 0, 0.8), rgba(0, 0, 0, 0.5));
+  background: radial-gradient(circle at 30% 20%, rgba(74, 222, 128, 0.8), rgba(0, 0, 0, 0.28));
   padding: 3.2rem 0 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }

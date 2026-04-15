@@ -1,9 +1,13 @@
 import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
 
 export default defineConfig({
-  site: 'https://mariaimifavretto-code.github.io/agafim/',
-  base: '/agafim/',
-  output: 'static',
+  site: 'https://www.agafim.org.br',
+  base: '/',
+  output: 'server',
+  adapter: node({
+    mode: 'standalone'
+  }),
   integrations: [],
   vite: {
     resolve: {
